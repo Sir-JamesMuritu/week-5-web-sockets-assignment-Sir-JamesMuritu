@@ -1,21 +1,36 @@
-// userController.js - Handles user-related logic
 
-const users = {};
+// userController.js - Handles user-related logic with MongoDB
+const User = require('../models/User');
+
+// Typing users can remain in-memory for real-time, non-persistent state
 const typingUsers = {};
 
-function addUser(socketId, username) {
-  users[socketId] = { username, id: socketId };
-}
-
-function removeUser(socketId) {
-  const user = users[socketId];
-  delete users[socketId];
-  delete typingUsers[socketId];
+async function addUser(socketId, username) {
+  // Find or create user in DB, set online true
+  let user = await User.findOne({ username });
+  if (!user) {
+    user = new User({ username, online: true });
+    await user.save();
+  } else {
+    user.online = true;
+    await user.save();
+  }
+  // Attach socketId for runtime reference (not persisted)
+  user.socketId = socketId;
   return user;
 }
 
-function getUsers() {
-  return Object.values(users);
+async function removeUser(socketId, username) {
+  // Set user offline in DB
+  if (username) {
+    await User.findOneAndUpdate({ username }, { online: false });
+  }
+  delete typingUsers[socketId];
+}
+
+async function getUsers() {
+  // Return all users with online status
+  return await User.find().lean();
 }
 
 function setTyping(socketId, username, isTyping) {
@@ -36,6 +51,4 @@ module.exports = {
   getUsers,
   setTyping,
   getTypingUsers,
-  users,
-  typingUsers,
 };

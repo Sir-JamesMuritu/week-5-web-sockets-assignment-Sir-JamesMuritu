@@ -1,14 +1,14 @@
-// models/Message.js - Message model (in-memory for now)
 
-class Message {
-  constructor({ id, sender, senderId, message, timestamp, isPrivate = false }) {
-    this.id = id;
-    this.sender = sender;
-    this.senderId = senderId;
-    this.message = message;
-    this.timestamp = timestamp;
-    this.isPrivate = isPrivate;
-  }
-}
+const mongoose = require('mongoose');
 
+const messageSchema = new mongoose.Schema({
+  sender: { type: String, required: true },
+  senderId: { type: String, required: true },
+  receiverId: { type: String }, // For private messages
+  message: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now },
+  isPrivate: { type: Boolean, default: false },
+});
+
+const Message = mongoose.model('Message', messageSchema);
 module.exports = Message;

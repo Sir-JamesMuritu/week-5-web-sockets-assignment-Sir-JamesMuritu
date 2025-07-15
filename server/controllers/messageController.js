@@ -1,18 +1,20 @@
-// messageController.js - Handles message-related logic
 
-const messages = [];
+// messageController.js - Handles message-related logic with MongoDB
+const Message = require('../models/Message');
 
-function addMessage(message) {
-  messages.push(message);
-  if (messages.length > 100) messages.shift();
+async function addMessage(messageData) {
+  const message = new Message(messageData);
+  await message.save();
+  // Optionally, you can limit the number of messages in the DB or implement pagination elsewhere
+  return message;
 }
 
-function getMessages() {
-  return messages;
+async function getMessages(limit = 100) {
+  // Get the latest messages, sorted by timestamp descending, limited
+  return await Message.find().sort({ timestamp: -1 }).limit(limit).lean();
 }
 
 module.exports = {
   addMessage,
   getMessages,
-  messages,
 };

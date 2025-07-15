@@ -1,4 +1,11 @@
+// generateToken.js - Utility to generate JWT tokens
 
-module.exports = {
-    // the jwt secret key
+const jwt = require('jsonwebtoken');
+
+const generateToken = (userId) => {
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+    expiresIn: '7d',
+  });
 };
+
+module.exports = generateToken;
