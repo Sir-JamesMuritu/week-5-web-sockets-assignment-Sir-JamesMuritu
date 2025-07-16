@@ -2,6 +2,8 @@
 // userController.js - Handles user-related logic with MongoDB
 const User = require('../models/User');
 
+console.log('User.find:', typeof User.find); // should log: 'function'
+
 // Typing users can remain in-memory for real-time, non-persistent state
 const typingUsers = {};
 
@@ -12,7 +14,7 @@ async function addUser(socketId, username) {
     user = new User({ username, online: true });
     await user.save();
   } else {
-    user.online = true;
+    user.isOnline = true;
     await user.save();
   }
   // Attach socketId for runtime reference (not persisted)

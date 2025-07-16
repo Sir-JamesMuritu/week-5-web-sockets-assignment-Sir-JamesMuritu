@@ -50,4 +50,14 @@ router.post('/logout', async (req, res) => {
   }
 });
 
+// GET /api/auth/users
+router.get('/users', async (req, res) => {
+  try {
+    const users = await authController.getUsers();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

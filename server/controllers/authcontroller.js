@@ -44,9 +44,17 @@ async function logout(username) {
   return await User.findOneAndUpdate({ username }, { online: false });
 }
 
+// Get all users
+async function getUsers() {
+  return await User.find().select('-password').lean();
+}
+
+
+
 module.exports = {
   signup,
   login,
   logout,
+  getUsers,
   profile,
 };

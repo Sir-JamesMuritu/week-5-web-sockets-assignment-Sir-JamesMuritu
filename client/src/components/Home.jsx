@@ -1,16 +1,12 @@
 // Home.jsx - Main chat interface
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSocket } from '../socket/socket';
-import { login as apiLogin, logout as apiLogout, fetchMessages } from '../services/api';
+import { fetchMessages, logout as apiLogout } from '../services/api';
 import ChatInput from './ChatInput';
 import ChatList from './ChatList';
 import UserList from './UserList';
 
-const Home = () => {
-    const [username, setUsername] = useState('');
-    const [joined, setJoined] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+const Home = ({ user, onLogout }) => {
     const [initialMessages, setInitialMessages] = useState([]);
     const {
         isConnected,
@@ -23,57 +19,25 @@ const Home = () => {
         setTyping,
     } = useSocket();
 
-    const handleJoin = async (e) => {
-        e.preventDefault();
-        if (!username.trim()) return;
-        setLoading(true);
-        setError('');
-        try {
-            await apiLogin(username.trim());
-            const msgs = await fetchMessages();
-            setInitialMessages(msgs.reverse()); // reverse to show oldest first
-            connect(username.trim());
-            setJoined(true);
-        } catch {
-            setError('Login failed. Try again.');
-        } finally {
-            setLoading(false);
+    useEffect(() => {
+        // Connect socket and fetch messages on mount
+        if (user?.username) {
+            connect(user.username);
+            fetchMessages().then(msgs => setInitialMessages(msgs.reverse()));
         }
-    };
+        // Disconnect socket on unmount
+        return () => disconnect();
+    }, [user, connect, disconnect]);
 
     const handleSend = (msg) => {
         sendMessage(msg);
     };
 
-    // On disconnect, call logout
     const handleDisconnect = async () => {
-        await apiLogout(username);
+        await apiLogout(user.username);
         disconnect();
-        setJoined(false);
-        setUsername('');
+        if (onLogout) onLogout();
     };
-
-    if (!joined) {
-        return (
-            <div style={{ maxWidth: 400, margin: '40px auto', textAlign: 'center' }}>
-                <h2>Join the Chat</h2>
-                <form onSubmit={handleJoin}>
-                    <input
-                        type="text"
-                        value={username}
-                        onChange={e => setUsername(e.target.value)}
-                        placeholder="Enter your username"
-                        style={{ width: '70%', padding: 8 }}
-                        disabled={loading}
-                    />
-                    <button type="submit" style={{ marginLeft: 8, padding: 8 }} disabled={loading}>
-                        {loading ? 'Joining...' : 'Join'}
-                    </button>
-                </form>
-                {error && <div style={{ color: 'red', marginTop: 12 }}>{error}</div>}
-            </div>
-        );
-    }
 
     // Merge initialMessages (from REST) and messages (from socket)
     const allMessages = [...initialMessages, ...messages];
@@ -95,6 +59,9 @@ const Home = () => {
                 </div>
                 <div style={{ marginTop: 8, fontSize: 12, color: isConnected ? 'green' : 'red' }}>
                     {isConnected ? 'Connected' : 'Disconnected'}
+                </div>
+                <div style={{ marginTop: 16, fontSize: 14 }}>
+                    <strong>Logged in as:</strong> {user?.username}
                 </div>
             </div>
         </div>

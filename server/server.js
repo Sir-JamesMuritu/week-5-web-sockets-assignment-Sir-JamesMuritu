@@ -34,7 +34,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/auth', require('./routers/authRoutes'));
 app.use('/api/messages', require('./routers/messageRoutes'));
 app.use('/api/rooms', require('./routers/roomRoutes'));
-app.use('/api/chat', require('./routers/chartRoute'));
+
 
 // Socket.io event handler (modular)
 require('./socket')(io);

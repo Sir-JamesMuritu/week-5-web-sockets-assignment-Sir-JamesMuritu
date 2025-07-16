@@ -4,8 +4,8 @@ import LoginPage from './pages/LoginPage';
 import { useState } from 'react';
 
 function App() {
-  const [username, setUsername] = useState('');
   const [loggedIn, setLoggedIn] = useState(false);
+  const [username, setUsername] = useState('');
 
   const handleLogin = (name) => {
     setUsername(name);
@@ -22,7 +22,13 @@ function App() {
       <Routes>
         <Route
           path="/login"
-          element={<LoginPage onLogin={handleLogin} />}
+          element={
+            loggedIn ? (
+              <Navigate to="/chat" replace />
+            ) : (
+              <LoginPage onLogin={handleLogin} />
+            )
+          }
         />
         <Route
           path="/chat"
@@ -34,7 +40,7 @@ function App() {
             )
           }
         />
-        <Route path="*" element={<Navigate to="/chat" replace />} />
+        <Route path="*" element={<Navigate to={loggedIn ? "/chat" : "/login"} replace />} />
       </Routes>
     </Router>
   );
